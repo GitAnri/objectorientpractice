@@ -1,0 +1,168 @@
+public abstract class Person {
+    private String name;
+    private int id;
+
+    public Person(String name, int id) {
+        this.name = name;
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public abstract String getRole();
+}
+
+
+
+--------------------------------------------------------------------------------------
+
+public class Student extends Person {
+    public Student(String name, int id) {
+        super(name, id);
+    }
+
+    @Override
+    public String getRole() {
+        return "Student";
+    }
+}
+
+public class Instructor extends Person {
+    public Instructor(String name, int id) {
+        super(name, id);
+    }
+
+    @Override
+    public String getRole() {
+        return "Instructor";
+    }
+}
+
+--------------------------------------------------------------------------------------
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+
+public class Course implements Iterable<Person> {
+    private List<Person> persons;
+
+    public Course() {
+        persons = new ArrayList<>();
+    }
+
+    public void addPerson(Person person) {
+        persons.add(person);
+    }
+
+    @Override
+    public Iterator<Person> iterator() {
+        return new PersonIterator();
+    }
+
+    private class PersonIterator implements Iterator<Person> {
+        private int currentIndex = 0;
+
+        @Override
+        public boolean hasNext() {
+            return currentIndex < persons.size();
+        }
+
+        @Override
+        public Person next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            return persons.get(currentIndex++);
+        }
+    }
+}
+
+
+--------------------------------------------------------------------------------------
+
+import java.util.Comparator;
+
+public class PersonNameComparator implements Comparator<Person> {
+    @Override
+    public int compare(Person p1, Person p2) {
+        return p1.getName().compareTo(p2.getName());
+    }
+}
+
+--------------------------------------------------------------------------------------
+import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
+import java.awt.*;
+import java.util.List;
+
+public class PersonTableModel extends AbstractTableModel {
+    private final String[] columnNames = {"ID", "Name", "Role"};
+    private List<Person> persons;
+
+    public PersonTableModel(List<Person> persons) {
+        this.persons = persons;
+    }
+
+    @Override
+    public int getRowCount() {
+        return persons.size();
+    }
+
+    @Override
+    public int getColumnCount() {
+        return columnNames.length;
+    }
+
+    @Override
+    public String getColumnName(int columnIndex) {
+        return columnNames[columnIndex];
+    }
+
+    @Override
+    public Object getValueAt(int rowIndex, int columnIndex) {
+        Person person = persons.get(rowIndex);
+        switch (columnIndex) {
+            case 0:
+                return person.getId();
+            case 1:
+                return person.getName();
+            case 2:
+                return person.getRole();
+            default:
+                return null;
+        }
+    }
+}
+
+public class CourseManagementApp {
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Course Management System");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(600, 400);
+
+            // Create sample data
+            Course course = new Course();
+            course.addPerson(new Student("Alice", 1));
+            course.addPerson(new Instructor("Dr. Bob", 2));
+            course.addPerson(new Student("Charlie", 3));
+
+            PersonTableModel personTableModel = new PersonTableModel(course.getPersons());
+            JTable table = new JTable(personTableModel);
+
+            frame.add(new JScrollPane(table), BorderLayout.CENTER);
+            frame.setVisible(true);
+        });
+    }
+}
+
+--------------------------------------------------------------------------------------
+
+
